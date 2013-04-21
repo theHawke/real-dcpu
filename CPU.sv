@@ -7,7 +7,7 @@ module CPU (
 	output RAM_addr,
 	output RAM_out,
 	output RAM_wr,
-	input RAM_data,
+	input RAM_data
 
 	//
 	
@@ -19,8 +19,8 @@ module CPU (
 		decode_op_fetch_a,
 		nextword_a,
 		fetch_b,
-		nextword_b,
-	} S = fetch;
+		nextword_b
+	} S;
 
 	reg [3:0] wait_tick = 4'h0; // stall processor to keep correct cycle count (1 cycle = XX ticks)
 
@@ -102,11 +102,12 @@ module CPU (
 	// falling-edge triggered to be on the opposite edge to the RAM clocking
 	always_ff @(negedge CORE_CLK or posedge RESET)
 	begin
-		if (RESET)
+		if (RESET) begin
 			PC <= 16'h0000;
 			SP <= 16'h0000;
 			IA <= 16'h0000;
 			S <= fetch;
+		end
 		else if (|wait_tick) // wait_tick != 0
 			wait_tick <= wait_tick - 4'h1;
 		else begin

@@ -1,5 +1,23 @@
-# ignore all .bak files
-*.bak
-
-# ignore files resulting from compilation
+# ignore Quartus II generated files
 *.sof
+*.pof
+*.qws
+*.smsg
+*.done
+*.qarlog
+*.rpt
+*.summary
+*.qws
+*.bak
+*.qar
+*~
+*.tcl
+*.pin
+
+# ignore Quartus II generated folders
+db/
+incremental_db/
+simulation/
+timing/
+testbench/
+*_sim/

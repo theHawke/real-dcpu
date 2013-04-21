@@ -11,7 +11,8 @@ module ALU (
 	output un // IFU, signed, get IFA = !eq&!un
 );
 
-	wire and_or, add_EX, add_sub, shift_dir, [3:0] out_mux;
+	wire and_or, add_EX, add_sub, shift_dir;
+	wire [3:0] out_mux;
 	
 	always_comb
 	begin
@@ -145,7 +146,7 @@ module ALU (
 	wire [15:0] addsub_EX, sh_EX, ash_EX, mul_EX, mli_EX, div_EX, dvi_EX;
 
 	// ADD, ADX, SUB, SBX
-	wire cr, EX_cr, of
+	wire cr, EX_cr, of;
 	add16 addsub(add_sub, b, a_in, add_out, cr),
 			addEX(0, add_out, EXin, add_out_EX, EX_cr);
 	assign add_q = add_EX ? add_out_EX : add_out;
@@ -228,6 +229,11 @@ module halfAdder (
 	output c
 );
 
+	assign q = a^b;
+	assign c = a&b;
+
+endmodule
+
 module add4 (
 	input cin,
 	input [3:0] a,
@@ -240,8 +246,8 @@ module add4 (
 
 	halfAdder ha0(a[0], b[0], p0, g0),
 				 ha1(a[1], b[1], p1, g1),
-				 ha1(a[2], b[2], p2, g2),
-				 ha1(a[3], b[3], p3, g3);
+				 ha2(a[2], b[2], p2, g2),
+				 ha3(a[3], b[3], p3, g3);
 	
 	assign q[0] = p0^cin;
 
