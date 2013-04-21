@@ -12,4 +12,4 @@ As a consequence:
 - I use Altera's Quartus II development environment (which is free by the way)
 - to make proper use of the FPGA chip, I use their 'Megafunction' library to get access to the builtin RAM and multipliers
 - the RAM modules can be configured to be dual-port which is immensly useful and I will definitely take advantage of that in the architecture
-- I use a divider 'Megafunction', as I'm currently too lazy to implement one myself (I might someday do one myself, especially, as I need four of tehe prebuilt ones in my ALU)
+- I use a divider 'Megafunction', as I'm currently too lazy to implement one myself (I might someday do one myself, especially, as I need four of the prebuilt ones in my ALU)
