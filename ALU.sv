@@ -156,10 +156,9 @@ module ALU (
 		endcase
 	end
 
-	wire [15:0] b_in = b ^ {16{and_or}};
-	wire [15:0] a_in = a ^ {16{and_or | add_sub}};
-
-	wire [15:0] addsub_q, and_out, and_q, xor_q, sh_out, sh_q, ash_q, mul_q, div_q, mod_q;
+	// output wires
+	wire [15:0] addsub_q, and_out, and_q, xor_q, sh_q, ash_q, mul_q, div_q, mod_q;
+	wire [31:0] sh_out;
 	wire [15:0] addsub_EX, sh_EX, ash_EX, mul_EX, div_EX;
 
 	// ADD, ADX, SUB, SBX
@@ -169,12 +168,12 @@ module ALU (
 	mul_div_mod mdm(b, a, mul_div_sgn, mul_q, mul_EX, div_q, div_EX, mod_q);
 
 	// AND, BOR
-	assign and_out = b_in & a_in;
+	assign and_out = (b^{16{and_or}}) & (a^{16{and_or}});
 	assign and_q = and_out ^ {16{and_or}};
 	assign cl = ~|and_q;
 
 	// XOR
-	assign xor_q = b_in ^ a_in;
+	assign xor_q = b ^ a;
 
 	// SHR, SHL
 	wire [31:0] sh_b;
@@ -189,8 +188,9 @@ module ALU (
 
 	always_comb
 	begin
+		q <= 16'h0000;
 		case(out_mux)
-			3'b000: q <= add_q;
+			3'b000: q <= addsub_q;
 			3'b001: q <= mul_q;
 			3'b010: q <= div_q;
 			3'b011: q <= mod_q;
@@ -203,6 +203,7 @@ module ALU (
 
 	always_comb
 	begin
+		EXout <= 16'h0000;
 		case(out_mux)
 			3'b000: EXout <= addsub_EX;
 			3'b001: EXout <= mul_EX;
