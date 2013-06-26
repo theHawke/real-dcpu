@@ -1,5 +1,5 @@
 module ALU (
-	input [3:0] fn,
+	input [4:0] op,
 	input [15:0] b,
 	input [15:0] a,
 	input [15:0] EXin, // for the ADX and SBX instructions
@@ -11,130 +11,147 @@ module ALU (
 	output un // IFU, signed, get IFA = !eq&!un
 );
 
-	wire and_or, add_EX, add_sub, shift_dir;
-	wire [3:0] out_mux;
+	wire and_or, add_EX, add_sub, shift_dir, mul_div_sgn;
+	wire [2:0] out_mux;
 	
 	always_comb
 	begin
-		case(fn)
-			4'h0: begin // ADD
+		case(op)
+			5'h02: begin // ADD
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0000;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b000;
 			end
-			4'h1: begin // SUB
+			5'h03,5'h12,5'h13,5'h14,5'h15,5'h16,5'h17: begin // SUB, IFE, IFN, IFG, IFA, IFL, IFU
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b1;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0000;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b000;
 			end
-			4'h2: begin // ADX
+			5'h1A: begin // ADX
 				and_or <= 1'b0;
 				add_EX <= 1'b1;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0000;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b000;
 			end
-			4'h3: begin // SBX
+			5'h1B: begin // SBX
 				and_or <= 1'b0;
 				add_EX <= 1'b1;
 				add_sub <= 1'b1;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0000;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b000;
 			end
-			4'h4: begin // MUL
+			5'h04: begin // MUL
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b1000;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b001;
 			end
-			4'h5: begin // MLI
+			5'h05: begin // MLI
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b1010;
+				mul_div_sgn <= 1'b1;
+				out_mux <= 3'b001;
 			end
-			4'h6: begin // DIV
+			5'h06: begin // DIV
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b1100;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b010;
 			end
-			4'h7: begin // DVI
+			5'h07: begin // DVI
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b1101;
+				mul_div_sgn <= 1'b1;
+				out_mux <= 3'b010;
 			end
-			4'h8: begin // MOD
+			5'h08: begin // MOD
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b1110;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b011;
 			end
-			4'h9: begin // MDI
+			5'h09: begin // MDI
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b1111;
+				mul_div_sgn <= 1'b1;
+				out_mux <= 3'b011;
 			end
-			4'hA: begin // AND
+			5'h0A,5'h10,5'h11: begin // AND, IFB, IFC
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0100;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b100;
 			end
-			4'hB: begin // BOR
+			5'h0B: begin // BOR
 				and_or <= 1'b1;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0100;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b100;
 			end
-			4'hC: begin // XOR
+			5'h0C: begin // XOR
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0101;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b101;
 			end
-			4'hD: begin // SHR
+			5'h0D: begin // SHR
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b1;
-				out_mux <= 4'b0110;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b110;
 			end
-			4'hE: begin // ASR
+			5'h0E: begin // ASR
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0111;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b111;
 			end
-			4'hF: begin // ADD
+			5'h0F: begin // SHL
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0110;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b110;
 			end
 			default: begin
 				and_or <= 1'b0;
 				add_EX <= 1'b0;
 				add_sub <= 1'b0;
 				shift_dir <= 1'b0;
-				out_mux <= 4'b0000;
+				mul_div_sgn <= 1'b0;
+				out_mux <= 3'b000;
 			end
 		endcase
 	end
@@ -142,22 +159,14 @@ module ALU (
 	wire [15:0] b_in = b ^ {16{and_or}};
 	wire [15:0] a_in = a ^ {16{and_or | add_sub}};
 
-	wire [15:0] add_out, add_out_EX, add_q, and_out, and_q, xor_q, sh_out, sh_q, ash_q, mul_q, mli_q, div_q, dvi_q, mod_q, mdi_q;
-	wire [15:0] addsub_EX, sh_EX, ash_EX, mul_EX, mli_EX, div_EX, dvi_EX;
+	wire [15:0] addsub_q, and_out, and_q, xor_q, sh_out, sh_q, ash_q, mul_q, div_q, mod_q;
+	wire [15:0] addsub_EX, sh_EX, ash_EX, mul_EX, div_EX;
 
 	// ADD, ADX, SUB, SBX
-	wire cr, EX_cr, of;
-	add16 addsub(add_sub, b, a_in, add_out, cr),
-			addEX(0, add_out, EXin, add_out_EX, EX_cr);
-	assign add_q = add_EX ? add_out_EX : add_out;
-	assign addsub_EX = add_sub ? (add_EX ? (cr == EX_cr ? (cr ? 16'h0001 : 16'hFFFF) : 16'h0000) : 
-														(cr ? 16'h0000 : 16'hFFFF)) : 
-										  (add_EX ? (cr == EX_cr ? (cr ? 16'h0002 : 16'h0000) : 16'h0001) : 
-														(cr ? 16'h0001 : 16'h0000));
-	assign of = (b[15] == a[15]^(&a[14:0] & add_sub)) & (b[15] != add_out);
-	assign eq = ~|add_q;
-	assign lt = !cr; // underflow happens when there is no carry
-	assign un = add_q[15_0] != of; // sign flag != overflow flag
+	add_sub_X addsub(b, a, EXin, add_sub, add_EX, addsub_q, addsub_EX, eq, lt, un);
+
+	// MUL, MLI, DIV, DVI, MOD, MDI
+	mul_div_mod mdm(b, a, mul_div_sgn, mul_q, mul_EX, div_q, div_EX, mod_q);
 
 	// AND, BOR
 	assign and_out = b_in & a_in;
@@ -178,97 +187,30 @@ module ALU (
 	// ASR
 	ashift16 ashifter({b, 16'd0}, a[3:0], {ash_q, ash_EX});
 
-	// MUL
-	mult16 multiplier(b, a, {mul_EX, mul_q});
+	always_comb
+	begin
+		case(out_mux)
+			3'b000: q <= add_q;
+			3'b001: q <= mul_q;
+			3'b010: q <= div_q;
+			3'b011: q <= mod_q;
+			3'b100: q <= and_q;
+			3'b101: q <= xor_q;
+			3'b110: q <= sh_q;
+			3'b111: q <= ash_q;
+		endcase
+	end
 
-	// MLI
-	smult16 smultiplier(b, a, {mli_EX, mli_q});
-
-	// DIV
-	div16 divider({b, 16'd0}, a, {div_q, div_EX});
-
-	// DVI
-	sdiv16 sdivider({b, 16'd0}, a, {dvi_q, dvi_EX});
-
-	// MOD
-	wire [15:0] mod_quo;
-	mod16 modulo(b, a, mod_quo, mod_q);
-
-	// MDI
-	wire [15:0] mdi_quo;
-	smod16 smodulo(b, a, mdi_quo, mdi_q);
-
-	assign q = out_mux[3] ? (out_mux[2] ? (out_mux[1] ? (out_mux[0] ? mdi_q : mod_q) : (out_mux[0] ? dvi_q : div_q)) : (out_mux[1] ? mli_q : mul_q)) :
-									(out_mux[2] ? (out_mux[1] ? (out_mux[0] ? ash_q : sh_q) : (out_mux[0] ? xor_q : and_q)) : add_q);
-
-	assign EXout = out_mux[3] ? (out_mux[2] ? (out_mux[0] ? dvi_EX : div_EX) : (out_mux[1] ? mli_EX : mul_EX)) : (out_mux[2] ? (out_mux[0] ? ash_EX : sh_EX) : addsub_EX);
-
-endmodule
-
-module add16 (
-	input cin,
-	input [15:0] a,
-	input [15:0] b,
-	output [15:0] q,
-	output cout
-);
-
-	wire carry1, carry2, carry3;
-	
-	add4 a0(cin, a[3:0], b[3:0], q[3:0], carry1),
-		  a1(carry1, a[7:4], b[7:4], q[7:4], carry2),
-		  a2(carry2, a[11:8], b[11:8], q[11:8], carry2),
-		  a3(carry3, a[15:12], b[15:12], q[15:12], cout);
-
-endmodule
-
-module halfAdder (
-	input a,
-	input b,
-	output q,
-	output c
-);
-
-	assign q = a^b;
-	assign c = a&b;
-
-endmodule
-
-module add4 (
-	input cin,
-	input [3:0] a,
-	input [3:0] b,
-	output [3:0] q,
-	output cout
-);
-
-	wire p0, p1, p2, p3, g0, g1, g2, g3;
-
-	halfAdder ha0(a[0], b[0], p0, g0),
-				 ha1(a[1], b[1], p1, g1),
-				 ha2(a[2], b[2], p2, g2),
-				 ha3(a[3], b[3], p3, g3);
-	
-	assign q[0] = p0^cin;
-
-	wire p0c = p0&cin;
-	assign q[1] = p1^(g0|p0c);
-
-	wire p1g0 = p1&g0;
-	wire p1p0c = p1&p0c;
-	assign q[2] = p2^(g1|p1g0|p1p0c);
-
-	wire p2p1 = p2&p1;
-	wire p2g1 = p2&g1;
-	wire p2p1g0 = p2&p1g0;
-	wire p2p1p0c = p2p1&p0c;
-	assign q[3] = p3^(g2|p2g1|p2p1g0|p2p1p0c);
-
-	wire p3p2 = p3&p2;
-	wire p3g2 = p3&g2;
-	wire p3p2g1 = p3&p2g1;
-	wire p3p2p1g0 = p3p2&p1g0;
-	wire p3p2p1p0c = p3&p2p1p0c;
-	assign cout = (g3|p3g2|p3p2g1|p3p2p1g0|p3p2p1p0c);
+	always_comb
+	begin
+		case(out_mux)
+			3'b000: EXout <= addsub_EX;
+			3'b001: EXout <= mul_EX;
+			3'b010: EXout <= div_EX;
+			3'b110: EXout <= sh_EX;
+			3'b111: EXout <= ash_EX;
+			default: EXout <= 16'h0000;
+		endcase
+	end
 
 endmodule
