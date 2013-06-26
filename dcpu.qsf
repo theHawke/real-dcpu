@@ -344,3 +344,5 @@ set_global_assignment -name QIP_FILE RAM.qip
 set_global_assignment -name QIP_FILE mult16.qip
 set_global_assignment -name QIP_FILE shift16.qip
 set_global_assignment -name QIP_FILE ashift16.qip
+set_global_assignment -name SYSTEMVERILOG_FILE ALUtester.sv
+set_global_assignment -name SYSTEMVERILOG_FILE LED_HEX.sv
