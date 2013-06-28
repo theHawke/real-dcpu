@@ -2,6 +2,7 @@
 *.sof
 *.pof
 *.qws
+*.qdf
 *.smsg
 *.done
 *.qarlog
@@ -13,10 +14,14 @@
 *~
 *.tcl
 *.pin
+*.jdi
+PLLJ_PLLSPE_INFO.txt
 
 # ignore Quartus II generated folders
 db/
 incremental_db/
+greybox_tmp/
+*/greybox_tmp/
 simulation/
 timing/
 testbench/
