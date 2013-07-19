@@ -1,0 +1,20 @@
+SET I, 0xF000
+SET J, DATA
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+STI [I], [J]
+	
+:TERMINATE
+	SET PC, TERMINATE
+
+:DATA
+    DAT 0xF048,0xF065,0xF06C,0xF06C,0xF06F,0xF020,0xF057,0xF06F,0xF072,0xF06C,0xF064,0xF021

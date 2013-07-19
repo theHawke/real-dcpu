@@ -18,34 +18,27 @@
  *
  */
 
-module mul_div_mod (
-	input [15:0] b,
-	input [15:0] a,
-	input sgn,
-	output [15:0] mul_q,
-	output [15:0] mul_EX,
-	output [15:0] div_q,
-	output [15:0] div_EX,
-	output [15:0] mod_q
-);
+module SEG_HEX(input [3:0] num, output [6:0] HEX);
 
-	wire sgn_b = b[15] && sgn; 
-	wire sgn_a = a[15] && sgn;
-	wire [15:0] unsigned_b = sgn_b ? -b : b;
-	wire [15:0] unsigned_a = sgn_a ? -a : a;
-
-	wire [31:0] mul_out;
-	wire [15:0] div_out, div_out_ex, mod_out;
-	wire divz;
-
-	mult16 mul(unsigned_b, unsigned_a, mul_out);
-
-	assign {mul_EX,mul_q} = sgn_b ^ sgn_a ? -mul_out : mul_out;
-
-	div16 div(b, a, div_out, mod_out, div_out_ex, divz);
-
-	assign {div_q,div_EX} = divz ? 32'd0 : (sgn_b ^ sgn_a ? -{div_out,div_out_ex} : {div_out,div_out_ex});
-
-	assign mod_q = divz ? 16'd0 : (sgn_b ? -mod_out : mod_out);	
+    always_comb
+    case(num) // 0 = on, 1 = off
+        4'h0: HEX <= 7'b1000000;
+        4'h1: HEX <= 7'b1111001;
+        4'h2: HEX <= 7'b0100100;
+        4'h3: HEX <= 7'b0110000;
+        4'h4: HEX <= 7'b0011001;
+        4'h5: HEX <= 7'b0010010;
+        4'h6: HEX <= 7'b0000010;
+        4'h7: HEX <= 7'b1111000;
+        4'h8: HEX <= 7'b0000000;
+        4'h9: HEX <= 7'b0010000;
+        4'hA: HEX <= 7'b0001000;
+        4'hB: HEX <= 7'b0000011;
+        4'hC: HEX <= 7'b1000110;
+        4'hD: HEX <= 7'b0100001;
+        4'hE: HEX <= 7'b0000110;
+        4'hF: HEX <= 7'b0001110;
+        default: HEX <= 7'b1111111;
+    endcase
 
 endmodule

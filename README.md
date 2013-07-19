@@ -10,5 +10,9 @@ When finished, the system is supposed to implement the specification found at ht
 I own an Altera DE2-115 FPGA board so that is what I'm currently developing for, but I hope that in the future the project will be not-too-difficult to adapt to other fpga board types / chips.
 As a consequence:
 - I use Altera's Quartus II development environment (which is free by the way)
-- to make proper use of the FPGA chip, I use their 'Megafunction' library to get access to the builtin RAM and multipliers
+- to make proper use of the FPGA chip, I use their 'Megafunction' library to get access to the builtin RAM and multipliers (and efficient ripple-carry adderas)
 - the RAM modules can be configured to be dual-port which is immensly useful and I will definitely take advantage of that in the architecture
+
+History
+----
+- 13/07/19: version 0.1, i.e. it compiles and can run code, albeit only non-branching, non-special instructions (and no hardware support aside from a monitor hardwired into memory)

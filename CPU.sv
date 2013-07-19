@@ -1,8 +1,28 @@
+/**************************************************************************
+ *  FPGA-implementation of the dcpu16
+ *  Copyright (C) 2013  Hauke Neizel
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
 module CPU (
 	// clock, reset, ...
 	input CORE_CLK,
 	input RESET,
-	output CPUhalt,
+	output halt,
 
 	// RAM access
 	output [15:0] RAM_addr,
@@ -15,19 +35,19 @@ module CPU (
 );
 
 	enum {
-		halt,
-		fetch,
-		fetch_a,
-		nextword_a,
-		fetch_b,
-		nextword_b,
-		set_write,
-		arith_write,
-		inc_ij,
-		dec_ij
+		S_halt,
+		S_fetch,
+		S_fetch_a,
+		S_nextword_a,
+		S_fetch_b,
+		S_nextword_b,
+		S_set_write,
+		S_arith_write,
+		S_inc_ij,
+		S_dec_ij
 	} S;
 
-	assign CPUhalt = S == halt;
+	assign halt = S == S_halt;
 
 	reg [3:0] wait_tick = 4'h0; // stall processor to keep correct cycle count (1 cycle = 4 ticks)
 
@@ -60,18 +80,18 @@ module CPU (
 		RAM_data <= 16'h0000;
 		RAM_wr <= 1'b0;
 		case(S)
-			fetch:
+			S_fetch:
 				RAM_addr <= PC;
 
-			fetch_a: begin
+			S_fetch_a: begin
 				case(IB[15:10])
-					6'h08,6'h09,6'h0A,6'h0B,6'h0C,6'h0D,6'h0E,6'h0F,: RAM_addr <= GP[IB[12:10]];
+					6'h08,6'h09,6'h0A,6'h0B,6'h0C,6'h0D,6'h0E,6'h0F: RAM_addr <= GP[IB[12:10]];
 					6'h18,6'h19: RAM_addr <= SP; // POP / PEEK
 					6'h10,6'h11,6'h12,6'h13,6'h14,6'h15,6'h16,6'h17,6'h1A,6'h1E,6'h1F: RAM_addr <= PC;
 				endcase
 			end
 
-			nextword_a: begin
+			S_nextword_a: begin
 				case(IB[15:10])
 					6'h10,6'h11,6'h12,6'h13,6'h14,6'h15,6'h16,6'h17: RAM_addr <= GP[IB[12:10]] + NW;
 					6'h1A: RAM_addr <= SP + NW; // PICK
@@ -79,7 +99,7 @@ module CPU (
 				endcase
 			end
 
-			fetch_b: begin
+			S_fetch_b: begin
 				case(IB[9:5])
 					5'h08,5'h09,5'h0A,5'h0B,5'h0C,5'h0D,5'h0E,5'h0F: RAM_addr <= GP[IB[7:5]];
 					5'h18: RAM_addr <= SP - 16'h0001; // PUSH
@@ -88,7 +108,7 @@ module CPU (
 				endcase
 			end
 
-			nextword_b: begin
+			S_nextword_b: begin
 				case(IB[9:5])
 					5'h10,5'h11,5'h12,5'h13,5'h14,5'h15,5'h16,5'h17: RAM_addr <= GP[IB[7:5]] + NW;
 					5'h1A: RAM_addr <= SP + NW;
@@ -96,7 +116,7 @@ module CPU (
 				endcase
 			end
 
-			set_write: begin
+			S_set_write: begin
 				case(IB[9:5])
 					5'h08,5'h09,5'h0A,5'h0B,5'h0C,5'h0D,5'h0E,5'h0F: begin
 						RAM_addr <= GP[IB[7:5]];
@@ -122,7 +142,7 @@ module CPU (
 				RAM_data <= a;
 			end
 
-			arith_write: begin
+			S_arith_write: begin
 				case(IB[9:5])
 					5'h08,5'h09,5'h0A,5'h0B,5'h0C,5'h0D,5'h0E,5'h0F: begin
 						RAM_addr <= GP[IB[7:5]];
@@ -157,19 +177,19 @@ module CPU (
 			PC <= 16'h0000;
 			SP <= 16'h0000;
 			IA <= 16'h0000;
-			S <= fetch;
+			S <= S_fetch;
 		end
 		else if (|wait_tick) // wait_tick != 0
 			wait_tick <= wait_tick - 4'h1;
 		else begin
 			case(S)
-				fetch: begin
+				S_fetch: begin
 					IB <= RAM_q;
 					PC <= PC + 16'h0001;
-					S <= fetch_a;
+					S <= S_fetch_a;
 				end
 
-				fetch_a: begin
+				S_fetch_a: begin
 					case(IB[15:10])
 						6'h00,6'h01,6'h02,6'h03,6'h04,6'h05,6'h06,6'h07: a <= GP[IB[12:10]];
 						6'h08,6'h09,6'h0A,6'h0B,6'h0C,6'h0D,6'h0E,6'h0F,6'h19: a <= RAM_q;
@@ -193,19 +213,20 @@ module CPU (
 					endcase
 
 					case(IB[15:10])
-						6'h10,6'h11,6'h12,6'h13,6'h14,6'h15,6'h16,6'h17,6'h1A,6'h1E: S <= nextword_a;
-						default:
-							S <= fetch_b;
+						6'h10,6'h11,6'h12,6'h13,6'h14,6'h15,6'h16,6'h17,6'h1A,6'h1E: S <= S_nextword_a;
+						default: 
+							if (spop) S <= S_halt;
+							else S <= S_fetch_b;
 					endcase
 				end
 
-				nextword_a: begin
+				S_nextword_a: begin
 					a <= RAM_q;
-					S <= fetch_b;
+					S <= S_fetch_b;
 					wait_tick <= 4'h3;
 				end
 
-				fetch_b: begin
+				S_fetch_b: begin
 					case(IB[9:5])
 						5'h00,5'h01,5'h02,5'h03,5'h04,5'h05,5'h06,5'h07: b <= GP[IB[7:5]];
 						5'h08,5'h09,5'h0A,5'h0B,5'h0C,5'h0D,5'h0E,5'h0F,5'h19: b <= RAM_q;
@@ -227,62 +248,71 @@ module CPU (
 						end
 					endcase
 					case(IB[9:5])
-						5'h10,5'h11,5'h12,5'h13,5'h14,5'h15,5'h16,5'h17,5'h1A,5'h1E: S <= nextword_b;
+						5'h10,5'h11,5'h12,5'h13,5'h14,5'h15,5'h16,5'h17,5'h1A,5'h1E: S <= S_nextword_b;
 						default:
 							case(IB[4:0])
-								5'h01: S <= set_write;
-								default: S <= arith_write;
+								5'h01,5'h1E,5'h1F: S <= S_set_write;
+								5'h02,5'h03,5'h04,5'h05,5'h06,5'h07,5'h08,5'h09,5'h0A,5'h0B,5'h0C,5'h0D,5'h0E,5'h0F,5'h1A,5'h1B: S <= S_arith_write;
+								default: S <= S_halt;
 							endcase
 					endcase
 					
 				end
 
-				nextword_b: begin
+				S_nextword_b: begin
 					b <= RAM_q;
-					S <= fetch_b;
 					wait_tick <= 4'h3;
+					case(IB[4:0])
+						5'h01,5'h1E,5'h1F: S <= S_set_write;
+						5'h02,5'h03,5'h04,5'h05,5'h06,5'h07,5'h08,5'h09,5'h0A,5'h0B,5'h0C,5'h0D,5'h0E,5'h0F,5'h1A,5'h1B: S <= S_arith_write;
+						default: S <= S_halt;
+					endcase
 				end
 
-				set_write: begin
+				S_set_write: begin
 					case(IB[9:5])
 						5'h00,5'h01,5'h02,5'h03,5'h04,5'h05,5'h06,5'h07: GP[IB[7:5]] <= a;
 						5'h1b: SP <= a;
 						5'h1c: PC <= a;
 						5'h1d: EX <= a;
 					endcase
-					case (IB[4:0])
-						5'h1e: S <= inc_ij;
-						5'h1f: S <= dec_ij;
-						default: S <= fetch;
+					case(IB[4:0])
+						5'h1e: S <= S_inc_ij;
+						5'h1f: S <= S_dec_ij;
+						default: S <= S_fetch;
 					endcase
 				end
 
-				arith_write: begin
+				S_arith_write: begin
 					case(IB[9:5])
 						5'h00,5'h01,5'h02,5'h03,5'h04,5'h05,5'h06,5'h07: GP[IB[7:5]] <= ALU_q;
 						5'h1b: SP <= ALU_q;
 						5'h1c: PC <= ALU_q;
 						5'h1d: EX <= ALU_q;
 					endcase
-					S <= fetch;
+					S <= S_fetch;
+					case(IB[4:0])
+						5'h02,5'h03,5'h04,5'h05: wait_tick <= 4'h4;
+						5'h06,5'h07,5'h08,5'h09: wait_tick <= 4'h8;
+					endcase
 				end
 
-				inc_ij: begin
+				S_inc_ij: begin
 					GP[6] <= GP[6] + 16'h0001; // I++
 					GP[7] <= GP[7] + 16'h0001; // J++
 					wait_tick <= 4'h3;
-					S <= fetch;
+					S <= S_fetch;
 				end
 
-				dec_ij: begin
+				S_dec_ij: begin
 					GP[6] <= GP[6] - 16'h0001; // I--
 					GP[7] <= GP[7] - 16'h0001; // J--
 					wait_tick <= 4'h3;
-					S <= fetch;
+					S <= S_fetch;
 				end
 
 				default: begin
-					S <= halt;
+					S <= S_halt;
 				end
 			endcase
 		end

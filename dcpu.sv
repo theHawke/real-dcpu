@@ -1,3 +1,23 @@
+/**************************************************************************
+ *  FPGA-implementation of the dcpu16
+ *  Copyright (C) 2013  Hauke Neizel
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
 module dcpu(
 
 	// CLOCK
@@ -53,7 +73,7 @@ module dcpu(
 	CPU cpu(
 		.CORE_CLK(Core_CLOCK),
 		.RESET(RESET),
-		.CPUhalt(halt),
+		.halt(halt),
 		.RAM_addr(CPU_RAM_addr),
 		.RAM_data(CPU_RAM_data),
 		.RAM_wr(CPU_RAM_wren),
@@ -85,5 +105,16 @@ module dcpu(
 		.data_b(DEV_RAM_data),
 		.wren_b(DEV_RAM_wren),
 		.q_b(DEV_RAM_q));
+
+	assign LEDG = 0;
+	assign LEDR = 0;
+	assign HEX4 = 7'h7F;
+	assign HEX5 = 7'h7F;
+	assign HEX6 = 7'h7F;
+	assign HEX7 = 7'h7F;
+	assign HEX3 = halt ? 7'b0001001 : 7'h7F;
+	assign HEX2 = halt ? 7'b0001000 : 7'h7F;
+	assign HEX1 = halt ? 7'b1000111 : 7'h7F;
+	assign HEX0 = halt ? 7'b0000111 : 7'h7F;
 
 endmodule
