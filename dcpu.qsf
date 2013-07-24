@@ -333,13 +333,13 @@ set_global_assignment -name RTLV_SIMPLIFIED_LOGIC ON
 set_global_assignment -name RTLV_REMOVE_FANOUT_FREE_REGISTERS ON
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name SDC_FILE dcpu.SDC
 set_global_assignment -name SOURCE_FILE README.md
 set_global_assignment -name SYSTEMVERILOG_FILE dcpu.sv
 set_global_assignment -name SYSTEMVERILOG_FILE CPU.sv
 set_global_assignment -name SOURCE_FILE CPUstates.md
 set_global_assignment -name QIP_FILE RAM.qip
+set_global_assignment -name MIF_FILE RAM.mif
 set_global_assignment -name QIP_FILE clocker.qip
 set_global_assignment -name SYSTEMVERILOG_FILE ALU/ALU.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ALU/add_sub_X.sv
@@ -365,3 +365,4 @@ set_global_assignment -name QIP_FILE Devices/Test_Monitor/VGAclocker.qip
 set_global_assignment -name QIP_FILE Devices/Test_Monitor/VRAM.qip
 set_global_assignment -name QIP_FILE Devices/Test_Monitor/PROM.qip
 set_global_assignment -name QIP_FILE Devices/Test_Monitor/FROM.qip
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

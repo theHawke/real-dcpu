@@ -1,17 +1,17 @@
-SET I, 0xF000
-SET J, DATA
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
-STI [I], [J]
+    SET I, 0xF000
+    SET J, DATA
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
+    STI [I], [J]
 	
 :TERMINATE
 	SET PC, TERMINATE

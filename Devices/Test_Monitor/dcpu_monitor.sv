@@ -45,7 +45,7 @@ module dcpu_monitor(
 
 	/* getting the proper clock */
 	wire CLK, Mem_CLK;
-	clocker clk(CLOCK_50, CLK);
+	VGAclocker clocker(CLOCK_50, CLK);
 	assign VGA_CLK = CLK;
 
 	wire [3:0] borderC = 4'b0010;

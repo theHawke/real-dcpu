@@ -27,8 +27,8 @@ module ALU (
 	output [15:0] EXout, // for ADD, SUB, MUL/MLI, DIV/DVI, SHR, ASR, SHL instructions
 	output cl, // IFC, get IFB = !cl
 	output eq, // IFE, get IFN = !eq
-	output lt, // IFL, unsigned, get IFG = !eq&!lt
-	output un // IFU, signed, get IFA = !eq&!un
+	output lt, // IFL, unsigned, get IFG = !eq&&!lt
+	output un // IFU, signed, get IFA = !eq&&!un
 );
 
 	wire and_or, add_EX, add_sub, shift_dir, mul_div_sgn;

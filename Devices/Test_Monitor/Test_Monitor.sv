@@ -48,7 +48,7 @@ module Test_Monitor (
 
 	/* getting the proper clock */
 	wire CLK, Mem_CLK;
-	VGAclocker clk(CLOCK_50, CLK);
+	VGAclocker clocker(CLOCK_50, CLK);
 	assign VGA_CLK = CLK;
 
 	wire [3:0] borderC = 4'b1000;
@@ -73,7 +73,7 @@ module Test_Monitor (
 
 	assign VGA_SYNC_N = VGA_HS ^ VGA_VS;
 
-	VRAM cells(.rdclock(scr_Mem_CLK), .rdaddress(scr_VRAM_addr), .q(scr_VRAM_data), .data(DMA_q), .wraddress(VRAM_counter[8:0]), .wrclock(DMA_CLOCK), .wren(1'b1));
+	VRAM cells(.rdclock(scr_Mem_CLK), .rdaddress(scr_VRAM_addr), .q(scr_VRAM_data), .data(DMA_q), .wraddress(VRAM_counter[8:0]), .wrclock(~DMA_CLOCK), .wren(1'b1));
 	FROM font_rom(.clock_a(scr_Mem_CLK), .address_a(scr_FROM_addr), .q_a(scr_FROM_data));
 	PROM pal_rom(.clock_a(scr_Mem_CLK), .address_a(scr_PROM_addr), .q_a(scr_PROM_data));
 
@@ -82,8 +82,10 @@ module Test_Monitor (
 
 	always_ff @(negedge DMA_CLOCK)
 	begin
-		if (RESET || VRAM_counter == 16'h0180) VRAM_counter <= 16'h0000;
-		else VRAM_counter <= VRAM_counter + 16'h0001;
+		if (RESET || VRAM_counter == 16'h0180)
+			VRAM_counter <= 16'h0000;
+		else
+			VRAM_counter <= VRAM_counter + 16'h0001;
 	end
 
 	assign DMA_addr = VRAM_base + VRAM_counter;

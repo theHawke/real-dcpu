@@ -1,0 +1,145 @@
+; some OS functions for screen output
+; arguments to subroutines on the stack in reverse order (first argument on top of the stack)
+; the result (if any) is returned in the A register
+
+    SET PC, ENTRY_POINT
+
+; args: src in I, dest in J, count in C
+:memcopy
+    IFE C, 0
+        SET PC, POP
+    STI [J], [I]
+    SUB C, 1
+    SET PC, memcopy
+
+; args: dest in J, count in C
+:memclear
+    IFE C, 0
+        SET PC, POP
+    STI [J], 0
+    SUB C, 1
+    SET PC, memclear
+
+
+; current screen line data
+:curline
+    DAT 0
+
+; clear the screen
+:sr_clear_scr
+    SET [curline], 0
+    SET J, 0xF000
+    SET C, 0x180
+    JSR memclear
+    SET PC, POP
+
+; moves the screen up one line
+:sr_move_up_scr
+    SET J, 0xF000
+    SET I, 0xF020
+    SET C, 0x160
+    JSR memcopy
+    SET C, 0x20
+    JSR memclear
+    SET PC, POP
+
+; prints a string to a specified position on the screen
+; args: start_row, start_col, str_ptr, str_len
+:sr_print_to_scr
+    SET J, PICK 1 ; start_row
+    MUL J, 32
+    ADD J, PICK 2
+    ADD J, 0xF000 ; screen base
+    SET I, PICK 3
+    SET C, PICK 4
+    JSR memcopy
+    SET PC, POP
+
+; prints a string to the next line on the screen, moves the screen up if necessary
+; args: str_prt, str_len
+:sr_print_string
+    IFE [curline], 11
+        JSR sr_move_up_scr
+    SET PUSH, PICK 2
+    SET PUSH, PICK 2
+    SET PUSH, 0
+    SET PUSH, [curline]
+    JSR sr_print_to_scr
+    ADD SP, 4 ; 4 x POP
+    IFL [curline], 11
+        ADD [curline], 1
+    SET PC, POP
+
+; prints a numvber to the next line of the screen
+; args: number_to_print
+:sr_print_int
+    SET J, print_int_data
+    ADD J, 5
+    SET A, PICK 1
+    SET C, 0
+:print_int_loop
+    SUB J, 1
+    SET [J], A
+    MOD [J], 10
+    ADD [J], 0x30
+    BOR [J], 0xF000
+    ADD C, 1
+    DIV A, 10
+    IFN A, 0
+        SET PC, print_int_loop
+
+    SET PUSH, C
+    SET PUSH, J
+    JSR sr_print_string
+    ADD SP, 2
+    SET PC, POP
+:print_int_data    
+    DAT 0, 0, 0, 0, 0
+
+; compute teh factorial n! of a number n
+; args: n
+:sr_factorial
+    SET C, PICK 1
+    SET A, 1
+:factorial_loop
+    IFL C, 1
+        SET PC, POP
+    MUL A, C
+    SUB C, 1
+    SET PC, factorial_loop
+
+; MAIN
+:ENTRY_POINT
+    SET PUSH, 12
+    SET PUSH, hello_world_string
+    SET PUSH, 10
+    SET PUSH, 0
+    JSR sr_print_to_scr
+    ADD SP, 4
+
+    SET PUSH, 1
+    XOR [at], -1
+    SET PUSH, at
+    JSR sr_print_string
+    ADD SP, 2
+    
+    SET C, 1
+:loop
+    IFG C, 8
+        SET PC, TERMINATE
+    SET PUSH, C
+    JSR sr_factorial
+    SET PUSH, A
+    JSR sr_print_int
+    ADD SP, 1
+    SET C, POP
+    ADD C, 1
+    SET PC, loop
+
+:hello_world_string
+    DAT 0xF048,0xF065,0xF06C,0xF06C,0xF06F,0xF020,0xF057,0xF06F,0xF072,0xF06C,0xF064,0xF021
+:at
+    DAT 0xF040
+
+:TERMINATE
+    SET PC, TERMINATE

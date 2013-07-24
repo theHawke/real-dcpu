@@ -65,19 +65,24 @@ module dcpu(
 	wire CPU_RAM_wren, DEV_RAM_wren;
 	wire Core_CLOCK, DMA_CLOCK;
 	wire RESET;
+
 	wire halt;
+	wire debug_flag;
+	wire [15:0] PC;
 
 	resetDelay rst(CLOCK_50, RESET);
-	clocker core(CLOCK_50, Core_CLOCK, DMA_CLOCK);
+	clocker core(.inclk0(CLOCK_50), .c0(Core_CLOCK), .c1(DMA_CLOCK));
 
 	CPU cpu(
 		.CORE_CLK(Core_CLOCK),
-		.RESET(RESET),
-		.halt(halt),
+		.RESET(RESET || !KEY[0]),
 		.RAM_addr(CPU_RAM_addr),
 		.RAM_data(CPU_RAM_data),
 		.RAM_wr(CPU_RAM_wren),
-		.RAM_q(CPU_RAM_q));
+		.RAM_q(CPU_RAM_q),
+		.DBG_flag(debug_flag),
+		.DBG_halt(halt),
+		.DBG_PC(PC));
 
 	Test_Monitor tm(
 		.CLOCK_50(CLOCK_50),
@@ -108,13 +113,14 @@ module dcpu(
 
 	assign LEDG = 0;
 	assign LEDR = 0;
-	assign HEX4 = 7'h7F;
+	assign HEX7 = halt ? 7'b0001011 : 7'h7F;
+	assign HEX6 = debug_flag ? 7'b0100001 : 7'h7F;
 	assign HEX5 = 7'h7F;
-	assign HEX6 = 7'h7F;
-	assign HEX7 = 7'h7F;
-	assign HEX3 = halt ? 7'b0001001 : 7'h7F;
-	assign HEX2 = halt ? 7'b0001000 : 7'h7F;
-	assign HEX1 = halt ? 7'b1000111 : 7'h7F;
-	assign HEX0 = halt ? 7'b0000111 : 7'h7F;
+	assign HEX4 = 7'h7F;
+
+	SEG_HEX h3(PC[15:12], HEX3),
+			  h2(PC[11:8], HEX2),
+			  h1(PC[7:4], HEX1),
+			  h0(PC[3:0], HEX0);
 
 endmodule
