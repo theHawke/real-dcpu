@@ -17,6 +17,9 @@
 *.pin
 *.jdi
 PLLJ_PLLSPE_INFO.txt
+dcpu-asm/*.hi
+dcpu-asm/*.o
+dcpu-asm/*.exe
 
 # ignore Quartus II generated folders
 db/
